@@ -5,3 +5,5 @@
 .\stock-sentiment-analysis\data\
 stock-sentiment-analysis/data/
 .\env
+stock-sentiment-analysis/helpers/__pycache__
+stock-sentiment-analysis/helpers/.ipynb_checkpoints
