@@ -1,0 +1,30 @@
+import mlflow
+import mlflow.transformers
+from models.finbert import train_finbert
+from helpers.loaders.data_loader import get_tokenized_datasets  # You must implement this
+from metrics import eval_metrics
+def run_mlflow_experiment(params):
+    train_dataset, val_dataset, test_dataset = get_tokenized_datasets()
+    with mlflow.start_run(run_name="FinBERT_India"):
+        mlflow.log_params(params)
+
+        model, tokenizer, metrics = train_finbert(
+            train_dataset,
+            val_dataset,
+            learning_rate=params["learning_rate"],
+            per_device_train_batch_size=params["per_device_train_batch_size"],
+            per_device_eval_batch_size=params["per_device_eval_batch_size"],
+            num_train_epochs=params["num_train_epochs"],
+            weight_decay=params["weight_decay"],
+            model_name=params["model_name"]
+        )
+
+        mlflow.log_metrics(metrics)
+        test_metrics = eval_metrics(test_dataset, model_dir=params["model_name"])
+        mlflow.log_metrics({f"test_{k}": v for k, v in test_metrics.items()})
+        mlflow.transformers.log_model(
+            transformers_model=model,
+            artifact_path="finbert-india-model",
+            tokenizer=tokenizer,
+            input_example={"text": "The market outlook is positive"}
+        )
