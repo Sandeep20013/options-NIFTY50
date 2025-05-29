@@ -10,4 +10,13 @@ dependencies:
   - torchvision
   - torchaudio
   - cudatoolkit=11.7
+  - scikit-learn
+  - sqlalchemy
+  - mlflow
+  - seaborn
+  - matplotlib
+  - mamba
   - pip
+  - pip:
+    - transformers
+    - python-dotenv
