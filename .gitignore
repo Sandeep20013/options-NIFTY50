@@ -1,9 +1,26 @@
-\env
-\.ipynb_checkpoints
-.\data
-.\cleaned_data
-.\stock-sentiment-analysis\data\
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Ignore virtual environment
+env/
+.venv/
+
+# Ignore data folders
+data/
+cleaned_data/
 stock-sentiment-analysis/data/
-.\env
-stock-sentiment-analysis/helpers/__pycache__
-stock-sentiment-analysis/helpers/.ipynb_checkpoints
+
+# Ignore nested __pycache__ and checkpoints in helpers and metrics
+stock-sentiment-analysis/helpers/**/__pycache__/
+stock-sentiment-analysis/helpers/**/.ipynb_checkpoints/
+stock-sentiment-analysis/metrics/**/__pycache__/
+stock-sentiment-analysis/models/**/__pycache__/
+stock-sentiment-analysis/postgres_scripts/**/__pycache__/
+
+.env
+# Ignore MLflow tracking directory
+mlruns/
