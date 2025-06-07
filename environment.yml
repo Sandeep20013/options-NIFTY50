@@ -1,22 +1,22 @@
 name: env
 channels:
   - pytorch
+  - nvidia
   - conda-forge
 dependencies:
   - python=3.11
   - numpy
   - pandas
-  - pytorch
-  - torchvision
-  - torchaudio
-  - cudatoolkit=11.7
   - scikit-learn
   - sqlalchemy
-  - mlflow
   - seaborn
   - matplotlib
   - mamba
   - pip
+  - pytorch=2.1.2
+  - torchvision=0.16.2
+  - torchaudio=2.1.2
   - pip:
-    - transformers
-    - python-dotenv
+      - transformers==4.52.3
+      - python-dotenv
+      - mlflow
