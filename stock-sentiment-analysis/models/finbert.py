@@ -37,6 +37,7 @@ def train_finbert(
         metric_for_best_model=metric_for_best_model,
         logging_steps=logging_steps,
         seed=seed,
+        logging_strategy=evaluation_strategy,
     )
 
     trainer = Trainer(
@@ -48,8 +49,9 @@ def train_finbert(
     )
 
     trainer.train()
+    metrics = trainer.evaluate()
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
 
     # return model and tokenizer if needed for further usage
-    return model, tokenizer
+    return model, tokenizer, metrics
