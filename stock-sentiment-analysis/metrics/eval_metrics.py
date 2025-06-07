@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from transformers import BertForSequenceClassification, BertTokenizer
 import torch
+import os
 
 def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,20 +37,15 @@ def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
 
     acc = accuracy_score(true_labels, pred_labels)
     precision, recall, f1, _ = precision_recall_fscore_support(true_labels, pred_labels, average='weighted')
-    # For multiclass roc_auc, use 'ovo' or 'ovr'
-    try:
-        auc = roc_auc_score(true_labels, pred_probs, multi_class='ovo')
-    except Exception:
-        auc = None
 
     print(f"Accuracy: {acc:.4f}")
     print(f"Precision: {precision:.4f}")
     print(f"Recall: {recall:.4f}")
     print(f"F1-score: {f1:.4f}")
-    if auc is not None:
-        print(f"ROC AUC: {auc:.4f}")
+    
 
     cm = confusion_matrix(true_labels, pred_labels)
+    cm_path = os.path.join(model_dir, "confusion_matrix.png")
     plt.figure(figsize=(6,5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=['Negative', 'Neutral', 'Positive'],
@@ -57,4 +53,14 @@ def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title('Confusion Matrix')
+    plt.savefig(cm_path)
     plt.show()
+    metrics = {
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1_score": f1,
+        "confusion_matrix_path": cm_path
+    }
+
+    return metrics
