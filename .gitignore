@@ -20,7 +20,7 @@ stock-sentiment-analysis/helpers/**/.ipynb_checkpoints/
 stock-sentiment-analysis/metrics/**/__pycache__/
 stock-sentiment-analysis/models/**/__pycache__/
 stock-sentiment-analysis/postgres_scripts/**/__pycache__/
-
+stock-sentiment-analysis/finbert-india
 .env
 # Ignore MLflow tracking directory
 mlruns/
