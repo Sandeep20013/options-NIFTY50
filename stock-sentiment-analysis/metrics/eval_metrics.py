@@ -19,7 +19,7 @@ def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
     pred_probs = []
 
     for batch in test_dataset:
-        inputs = {k: torch.tensor(v).unsqueeze(0).to(device) for k, v in batch.items() if k != 'labels'}
+        inputs = {k: v.clone().detach().unsqueeze(0).to(device) for k, v in batch.items() if k != 'labels'}
         labels = batch['labels']
         with torch.no_grad():
             outputs = model(**inputs)
