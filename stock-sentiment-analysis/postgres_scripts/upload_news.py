@@ -1,26 +1,41 @@
-import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+import pandas as pd
 
-# Replace with your actual credentials (the ones you used in docker run)
-user = os.getenv('DB_USER')
-password = os.getenv('DB_PASS')
-host = os.getenv('DB_HOST')
-port = os.getenv('DB_PORT')
-database = os.getenv('DB_NAME')
+def main():
+    load_dotenv(".\.env")
 
-# Connection string
-password_escaped = quote_plus(password)  # This will encode special chars like '@' properly
-conn_str = f"postgresql://{user}:{password_escaped}@{host}:{port}/{database}"
-# Create SQLAlchemy engine
-engine = create_engine(conn_str)
+    df = pd.read_excel('NIFTY_dataset.xlsx')
+    print("Dataset loaded. Sample data:")
+    print(df.head())
 
-# Load your CSV
-df = pd.read_csv("data/Indian_Financial_News.csv")  # adjust path if needed
+    user = os.getenv('DB_USER')
+    password = os.getenv('DB_PASS')
+    host = os.getenv('DB_HOST')
+    port = os.getenv('DB_PORT')
+    database = os.getenv('DB_NAME')
 
-# Write DataFrame to PostgreSQL table 'financial_news'
-df.to_sql('financial_news', engine, if_exists='replace', index=False)
+    if not all([user, password, host, port, database]):
+        raise Exception("One or more database environment variables are missing!")
 
-print("CSV data uploaded successfully!")
+    password_escaped = quote_plus(password)
+    conn_str = f"postgresql://{user}:{password_escaped}@{host}:{port}/{database}"
+    print(f"Connecting to DB at {host}:{port} ...")
+    engine = create_engine(conn_str)
+
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        print("Database connection successful.")
+    except Exception as e:
+        print("Failed to connect to the database.")
+        raise e
+
+    print("Uploading data to PostgreSQL...")
+    df.to_sql('financial_news', engine, if_exists='replace', index=False)
+    print("Data uploaded successfully!")
+
+if __name__ == "__main__":
+    main()
