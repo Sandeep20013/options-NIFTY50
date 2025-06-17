@@ -1,4 +1,10 @@
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments, BertTokenizer
+from sklearn.metrics import accuracy_score
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = logits.argmax(axis=-1)
+    return {'accuracy': accuracy_score(labels, preds)}
 
 def train_finbert(
     train_dataset,
@@ -7,8 +13,8 @@ def train_finbert(
     model_name='yiyanghkust/finbert-tone',
     num_labels=3,
     learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     num_train_epochs=4,
     weight_decay=0.01,
     logging_dir='./logs',
@@ -38,6 +44,7 @@ def train_finbert(
         logging_steps=logging_steps,
         seed=seed,
         logging_strategy=evaluation_strategy,
+        fp16=True,  # Add mixed precision to reduce memory usage
     )
 
     trainer = Trainer(
@@ -46,6 +53,7 @@ def train_finbert(
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         tokenizer=tokenizer,
+        compute_metrics=compute_metrics
     )
 
     trainer.train()
@@ -53,5 +61,4 @@ def train_finbert(
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
 
-    # return model and tokenizer if needed for further usage
     return model, tokenizer, metrics
