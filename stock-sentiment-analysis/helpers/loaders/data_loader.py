@@ -1,34 +1,35 @@
 import os
 from datasets import Dataset
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from postgres_scripts.read_data import load_financial_news
 from helpers.clean_data import IndianNewsDataCleaner
 from helpers.tokenizer_indian import tokenize_function
-
-
-def get_tokenized_datasets(country='India', label='Sentiment', test_size=0.2, val_size=0.1, random_state=42):
+def get_tokenized_datasets(country='India', label='label', test_size=0.2, val_size=0.1, random_state=42):
     # Load env vars
-    user = os.getenv('DB_USER')
-    password = os.getenv('DB_PASS')
-    host = os.getenv('DB_HOST')
-    port = os.getenv('DB_PORT')
-    database = os.getenv('DB_NAME')
 
-    # Load and clean raw data
-    df = load_financial_news(database=database, host=host, password=password, port=port, user=user)
+    # user = os.getenv('DB_USER')
+    # password = os.getenv('DB_PASS')
+    # host = os.getenv('DB_HOST')
+    # port = os.getenv('DB_PORT')
+    # database = os.getenv('DB_NAME')
+
+    # # Load and clean raw data
+    # df = load_financial_news(database=database, host=host, password=password, port=port, user=user)
+    df = pd.read_excel("postgres_scripts/NIFTY_dataset.xlsx")
     cleaner = IndianNewsDataCleaner(df, country=country, label=label)
     print(df.columns)
 
     df_clean = (
         cleaner
         .map_sentiment()
+        .split_rows_in_pairs()
         .add_country()
         .clean_text()
         .filter_data()
         .get_clean_data()
     )
     print(df.shape)
-    # Split data
     train_df, test_df = train_test_split(df_clean, test_size=test_size, stratify=df_clean[label], random_state=random_state)
     train_df, val_df = train_test_split(train_df, test_size=val_size, stratify=train_df[label], random_state=random_state)
 
