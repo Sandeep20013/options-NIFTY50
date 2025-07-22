@@ -1,11 +1,32 @@
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments, BertTokenizer
 from sklearn.metrics import accuracy_score
+from torch.nn import CrossEntropyLoss
+from collections import Counter
+import torch
+
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = logits.argmax(axis=-1)
     return {'accuracy': accuracy_score(labels, preds)}
 
+class WeightedTrainer(Trainer):
+    def __init__(self, class_weights=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_weights = class_weights.to(self.model.device) if class_weights is not None else None
+
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+        logits = outputs.logits
+
+        if self.class_weights is not None:
+            loss_fct = CrossEntropyLoss(weight=self.class_weights)
+            loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        else:
+            loss = outputs.loss
+
+        return (loss, outputs) if return_outputs else loss
 def train_finbert(
     train_dataset,
     val_dataset,
@@ -26,6 +47,11 @@ def train_finbert(
     seed=42
 ):
     # Load model and tokenizer
+    labels = [example['labels'].item() for example in train_dataset]
+    counts = Counter(labels)
+    class_weights = torch.tensor([1.0 / counts.get(i, 1) for i in range(num_labels)], dtype=torch.float)
+
+    
     model = BertForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     tokenizer = BertTokenizer.from_pretrained(model_name)
 
@@ -47,13 +73,14 @@ def train_finbert(
         fp16=True,  # Add mixed precision to reduce memory usage
     )
 
-    trainer = Trainer(
+    trainer = WeightedTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics
+        compute_metrics=compute_metrics,
+        class_weights=class_weights
     )
 
     trainer.train()
