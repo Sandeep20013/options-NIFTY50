@@ -19,21 +19,14 @@ class IndianNewsDataCleaner:
 
     def split_rows_in_pairs(self):
         self.print_length_stats("Before splitting rows")
+    
+        def split_and_strip(text):
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            return lines
 
-        def group_lines(lines):
-            # lines is a list of stripped lines
-            grouped = []
-            for i in range(0, len(lines), 5):
-                pair = lines[i:i+2]
-                grouped.append("\n".join(pair))  # join with newline or space if you prefer
-            return grouped
-
-        # Apply split, strip, then group by 2 lines
-        self.df[self.desc_col] = self.df[self.desc_col].astype(str).apply(
-            lambda x: group_lines([line.strip() for line in x.split('\n') if line.strip()])
-        )
-
+        self.df[self.desc_col] = self.df[self.desc_col].astype(str).apply(split_and_strip)
         self.df = self.df.explode(self.desc_col).reset_index(drop=True)
+        
         self.print_length_stats("After splitting rows")
         return self
 
