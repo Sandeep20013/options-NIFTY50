@@ -23,7 +23,7 @@ def run_mlflow_experiment(params, exp_name):
         )
     
         mlflow.log_metrics(metrics)
-        test_metrics = evaluate_finbert(test_dataset, model_dir=params["model_name"])
+        test_metrics = evaluate_finbert(test_dataset, model_dir= "./")
         conf_path = test_metrics.pop("confusion_matrix_path")
         mlflow.log_metrics({f"test_{k}": v for k, v in test_metrics.items()})
         mlflow.log_artifact(conf_path)

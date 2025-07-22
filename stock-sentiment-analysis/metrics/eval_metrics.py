@@ -6,7 +6,7 @@ from transformers import BertForSequenceClassification, BertTokenizer
 import torch
 import os
 
-def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
+def evaluate_finbert(test_dataset, model_dir='./'):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     model = BertForSequenceClassification.from_pretrained(model_dir)
@@ -46,6 +46,10 @@ def evaluate_finbert(test_dataset, model_dir='./finbert-india'):
 
     cm = confusion_matrix(true_labels, pred_labels)
     cm_path = os.path.join(model_dir, "confusion_matrix.png")
+
+# Ensure directory exists
+    os.makedirs(model_dir, exist_ok=True)
+
     plt.figure(figsize=(6,5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=['Negative', 'Neutral', 'Positive'],
