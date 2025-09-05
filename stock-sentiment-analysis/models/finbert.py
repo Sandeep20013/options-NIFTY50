@@ -3,12 +3,16 @@ from sklearn.metrics import accuracy_score
 from torch.nn import CrossEntropyLoss
 from collections import Counter
 import torch
-
+from sklearn.metrics import f1_score
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = logits.argmax(axis=-1)
-    return {'accuracy': accuracy_score(labels, preds)}
+    return {
+        'accuracy': accuracy_score(labels, preds),
+        'macro_f1': f1_score(labels, preds, average='macro'),
+        'weighted_f1': f1_score(labels, preds, average='weighted')
+    }
 
 class WeightedTrainer(Trainer):
     def __init__(self, class_weights=None, *args, **kwargs):
@@ -34,8 +38,8 @@ def train_finbert(
     model_name='yiyanghkust/finbert-tone',
     num_labels=3,
     learning_rate=2e-5,
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
     num_train_epochs=4,
     weight_decay=0.01,
     logging_dir='./logs',
@@ -51,7 +55,11 @@ def train_finbert(
 
     labels = [example['labels'].item() for example in train_dataset]
     counts = Counter(labels)
-    class_weights = torch.tensor([1.0 / counts.get(i, 1) for i in range(num_labels)], dtype=torch.float)
+    total = sum(counts.values())
+    class_weights = torch.tensor(
+        [total / (num_labels * counts[i]) for i in range(num_labels)],
+        dtype=torch.float
+    )    
     model = BertForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     tokenizer = BertTokenizer.from_pretrained(model_name)
 
