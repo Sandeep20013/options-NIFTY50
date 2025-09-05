@@ -12,7 +12,7 @@ def main():
         "model_name": "yiyanghkust/finbert-tone"
     }
 
-    mlflow_finbert.run_mlflow_experiment(params, "Finbert_test_2")
+    mlflow_finbert.run_mlflow_experiment(params, "Finbert_test_3")
 
 if __name__ == "__main__":
     main()

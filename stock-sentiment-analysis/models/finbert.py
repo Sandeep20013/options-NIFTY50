@@ -47,11 +47,11 @@ def train_finbert(
     seed=42
 ):
     # Load model and tokenizer
+    print(f"[DEBUG] Training with learning rate: {learning_rate}")
+
     labels = [example['labels'].item() for example in train_dataset]
     counts = Counter(labels)
     class_weights = torch.tensor([1.0 / counts.get(i, 1) for i in range(num_labels)], dtype=torch.float)
-
-    
     model = BertForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     tokenizer = BertTokenizer.from_pretrained(model_name)
 

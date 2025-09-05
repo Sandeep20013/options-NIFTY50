@@ -1,14 +1,14 @@
 import mlflow
 import mlflow.transformers
 from models.finbert import train_finbert
-from helpers.loaders.data_loader import get_tokenized_datasets  # You must implement this
+from helpers.loaders.data_loader import get_tokenized_datasets
 from metrics.eval_metrics import evaluate_finbert
 def run_mlflow_experiment(params, exp_name):
     experiment_name = exp_name
     mlflow.set_experiment(experiment_name)
     train_dataset, val_dataset, test_dataset = get_tokenized_datasets()
-    
-    with mlflow.start_run(run_name="FinBERT_India_1"):
+
+    with mlflow.start_run(run_name=experiment_name):
         mlflow.log_params(params)
 
         model, tokenizer, metrics = train_finbert(
